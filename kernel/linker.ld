@@ -18,28 +18,26 @@ SECTIONS{
     . = 0xffffffff80000000;
 
     /*requests for limine*/
-    .requests : {
+    .requests : ALIGN(CONSTANT(MAXPAGESIZE)){
       KEEP(*(.requests_start_marker))
       KEEP(*(.requests))
       KEEP(*(.requests_end_marker))
     } :requests
 
-    /* page aline .text */
-    . = ALIGN(CONSTANT(MAXPAGESIZE));
+    /* space for static tables */
+    .tables : ALIGN(CONSTANT(MAXPAGESIZE)){
+      *(.tables .tables.*)
+    }
 
-    .text : {
+    .text : ALIGN(CONSTANT(MAXPAGESIZE)){
       *(.text .text.*)
     } :text
 
-    . = ALIGN(CONSTANT(MAXPAGESIZE));
-
-       .rodata : {
+    .rodata : ALIGN(CONSTANT(MAXPAGESIZE)){
         *(.rodata .rodata.*)
     } :rodata
 
-    . = ALIGN(CONSTANT(MAXPAGESIZE));
-
-    .data : {
+    .data : ALIGN(CONSTANT(MAXPAGESIZE)){
         *(.data .data.*)
     } :data
 

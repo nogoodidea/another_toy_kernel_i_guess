@@ -1,4 +1,8 @@
+#ifndef TYPES_H
+#define TYPES_H
 #include<stdint.h>
+
+
 
 // rust types
 typedef int8_t i8;
@@ -11,4 +15,11 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 // pointer width
-typedef intptr_t usize;
+typedef intptr_t isize;
+typedef uintptr_t usize;
+
+// 128 width integers
+typedef __int128 i128;
+typedef unsigned __int128 u128;
+
+#endif // TYPES_H

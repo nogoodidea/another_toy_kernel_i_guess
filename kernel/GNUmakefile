@@ -52,7 +52,9 @@ override KCFLAGS += \
     -mno-sse2 \
     -mno-red-zone \
     -mcmodel=kernel \
-		-I $(GIT_ROOT)/submodules/limine/limine.h
+		-I $(GIT_ROOT)/submodules/limine/ \
+		-I src/common/
+
 		
 # Internal C preprocessor flags that should not be changed by the user.
 override KCPPFLAGS := \
