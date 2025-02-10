@@ -35,6 +35,21 @@ void *memset(void *s, int c, size_t n){
   return s;
 }
 
+volatile void *memsetv(volatile void *s, int c, size_t n){
+  volatile int *buf = s;
+
+  size_t i = 0;
+  for(i = 0;i*sizeof(int)<n;i++){
+    buf[i] = c;
+  }
+  i *= sizeof(int);
+  volatile u8 *bufu8 = s; 
+  for(;i<n;i++){
+    bufu8[i] = (u8) c;
+  }
+  return s;
+}
+
 void *memove(void *dest, const void *src, size_t n){
     uint8_t *pdest = (uint8_t *)dest;
     const uint8_t *psrc = (const uint8_t *)src;

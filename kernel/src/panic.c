@@ -1,5 +1,6 @@
 #include "panic.h"
 
+#include "tables/IDT.h"
 #include "io/serial.h"
 #include "io/kprint.h"
 #include "framebuffer.h"
@@ -16,6 +17,9 @@ __attribute__((noreturn)) static void hcf(void) {
 //NO FUNCTIONS IN HERE CAN PANIC 
 // if it does bad things will happen.
 __attribute__((noreturn)) void _panic(const char *text,int line,const char *file){
+  // disable interupts just to be safe
+  interupt_disable();
+  //
   serial_int(COM1); // reinit serial bc we don't know it's state
   kprints_s(COM1,"PANIC! "); 
   kprints_s(COM1,file);
@@ -24,6 +28,6 @@ __attribute__((noreturn)) void _panic(const char *text,int line,const char *file
   kprints_s(COM1,"\nmsg: ");
   kprints_s(COM1,text);
 
-  hcf();
+  hcf(); //TODO replace w/ power off
 }
 

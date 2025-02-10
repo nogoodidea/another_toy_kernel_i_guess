@@ -4,18 +4,19 @@
 #include "common/types.h"
 
 
-struct __attribute__((packed)) idt_s {
-    u16 offset_low;
-    u16 seg;
-    u8 IST :2; // 0 to 2
-    u8 :6;
-    u8 gate_type :2;
-    u8 :1;
-    u8 DPL :2;
-    bool present;
-    u16 offset_mid;
-    u32 offset_high;
-    u32 :32;
+typedef struct __attribute__((packed,unused)) idt_entry_s {
+    uint16_t offset_low;
+    uint16_t selector;
+    uint8_t  ist;
+    uint8_t  type_attributes;
+    uint16_t offset_mid;
+    uint32_t offset_high;
+    uint32_t zero;
+} idt_entry_t; // 128
+
+enum idt_gate_type_e{
+  Interrupt = 0x6, // 110
+  Trap = 0x7,      // 111
 };
 
 
@@ -30,8 +31,10 @@ void idt_set_privlage(u8 i,u8 privlage);
 
 void idt_set_present(u8 i,bool set);
 
+void idt_set_gate_type(u8 i,enum idt_gate_type_e gate);
+
 // idt
-void idt_load();
+bool idt_load();
 
 void interupt_enable();
 

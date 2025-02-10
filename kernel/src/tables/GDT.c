@@ -1,6 +1,13 @@
 #include "GDT.h"
 #include "io/kprint.h"
 
+#include "common/mem.h"
+#include "common/addr.h"
+#include "common/types.h"
+
+#include "panic.h"
+
+
   // null segmetn
   // ring 0 - read write
   // ring 0 - code read
@@ -11,102 +18,77 @@
   // Reserved (null)
   //
 
+// asm block
+extern void reload_segments();
+
 
 __attribute((section(".tables"),aligned(0x10))) static volatile gdt_entry_t GDT[8];
 
-void segment_init(volatile gdt_entry_t *gdt,u64 base,u32 limit, bool rw, bool DC, bool code, u8 DPL){
+void segment_init(volatile gdt_entry_t *gdt,u64 base,u32 limit,u8 access,u8 flags){
     // limit
     //TODO limit the limit
-    gdt->limit_low = limit;
-    gdt->limit_high = limit >> 16;
+    gdt->limit_low =  limit;
+    gdt->limit_high = (limit >> 16); 
     // base
-    gdt->base_low = base;
-    gdt->base_high = base >> 23;
-    // flags
-    // kinda annoying
-    gdt->flags.seg.accessed = 1;
-    gdt->flags.seg.rw = rw;
-    gdt->flags.seg.DC = DC;
-    gdt->flags.seg.code = code;
-    gdt->flags.seg.descriptor = false;
-    gdt->flags.seg.DPL = DPL;
-    gdt->flags.seg.present = true;
+    gdt->base_low =   base;
+    gdt->base_mid_0 = base >> 16;
+    gdt->base_mid_1 = base >> 24;
+    gdt->base_high =  base  >> 32;
 
-    gdt->size = true;
-    gdt->long_mode = true;
-    gdt->granularity = true;
+    // access
+    gdt->access = access;
+    gdt->flags  = flags;
 }
 
-void segment_init_system(volatile gdt_entry_t *gdt,u64 base,u32 limit,u8 type, u8 DPL){
-    // limit
-    //TODO limit the limit
-    gdt->limit_low = limit;
-    gdt->limit_high = limit >> 16;
-    // base
-    gdt->base_low = base;
-    gdt->base_high = base >> 23;
-    // flags
-    // kinda annoying
-    gdt->flags.sys.type = type;
-    gdt->flags.sys.descriptor = true;
-    gdt->flags.sys.DPL = DPL;
-    gdt->flags.sys.present = true;
-
-    gdt->size = true;
-    gdt->long_mode = true;
-    gdt->granularity = true;
-}
 
 void segment_null(volatile gdt_entry_t *gdt){
-    // limit
-    gdt->limit_low = 0;
-    gdt->limit_high = 0;
-    // base
-    gdt->base_low = 0;
-    gdt->base_high = 0;
-    // flags
-    // kinda annoying
-    gdt->flags.seg.accessed = 0;
-    gdt->flags.seg.rw = 0;
-    gdt->flags.seg.DC = 0;
-    gdt->flags.seg.code = 0;
-    gdt->flags.seg.descriptor = 0;
-    gdt->flags.seg.DPL = 0;
-    gdt->flags.seg.present = 0;
-
-    gdt->size = 0;
-    gdt->long_mode = 0;
-    gdt->granularity = 0;
+    memsetv( &gdt,0x0,sizeof(gdt_entry_t));
 }
 
-void init_gdt(const void *tts){
+void gdt_init(const void *tts){
   // NULL DESCRIPTOR 
-  segment_null(GDT + 0);
+  segment_null(GDT);
 
   // kernel mode code segment
-  segment_init(GDT + 1,0,0x000fffff,true,false,true,0);
+  segment_init(GDT+1,0,0x000FFFFF,0x9A,0xC);
 
   // kernel mode data segment
-  segment_init(GDT + 2,0,0x000fffff,true,false,false,0);
+  segment_init(GDT+2,0,0x000FFFFF,0x9A,0xC);
  
 
   // kernel mode code segment
-  segment_init(GDT + 3,0,0x000fffff,true,false,true,3);
+  segment_init(GDT+3,0,0x000fffff,0xFA,0xC);
 
   // kernel mode data segment
-  segment_init(GDT + 4,0,0x000fffff,true,false,false,3); 
+  segment_init(GDT+4,0,0x000fffff,0xF2,0xC); 
   //TTS
-  segment_init_system(GDT + 5,(usize) tts,sizeof((tts)-1),0x2,0);
-  
+  segment_init(GDT+5,(usize) tts,sizeof((tts))-1,0x89,0x0);
+} 
+
+
+bool gdt_load(){
   // make the gdtr
   struct __attribute__((packed)){
     u16 size;
     u64 offset;
-  } gdtr = {sizeof(GDT)-1, (u64) GDT};
+  } gdtr = {(sizeof(gdt_entry_t)*8)-1, (u64) &GDT};
 
   // enable it
   asm(
       "LGDT %0\n\t"
-      : "=m" (gdtr)
+      ::"m" (gdtr)
       :);
+
+  reload_segments();
+
+  PANIC("GOT HERE");
+
+  asm(
+      "MOV %%ax, 0x20\n\t" // 0x28 = 101000 or the segment selector of the TTS
+      "LTR %%ax\n\t"
+    :::"ax");
+  
+
+  return true;
 }
+

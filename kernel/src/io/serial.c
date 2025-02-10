@@ -1,9 +1,11 @@
 #include <stdbool.h>
 
 
-#include "common/types.h"
-#include "common/port.h"
+#include "../common/types.h"
+#include "../common/port.h"
+#include "io/buffer.h"
 
+#include "panic.h"
 
 
 //
@@ -49,4 +51,20 @@ void serial_write(u16 port,char c){
     //TODO here
   }
   outb(port,c);
+}
+
+// buffered io implemntation
+
+bool buffer_io_serial_flush(char buffer[IO_BUFFER_LEN],usize index, void *data){
+  for(usize i=0;i < index;i+=1){
+    serial_write((usize) data,buffer[i]);
+  }
+  return true;
+}
+
+void io_init_serial(io_buffer b,u16 port){
+  io_init_buffer(b,(void *)(usize) port,buffer_io_serial_flush); 
+  if(serial_int(port)){
+    PANIC("UNABLE TO INT BUFFER"); // like ... this will not display.
+  }
 }

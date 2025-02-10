@@ -16,7 +16,6 @@ PHDRS{
 SECTIONS{
     /* higher half */
     . = 0xffffffff80000000;
-
     /*requests for limine*/
     .requests : ALIGN(CONSTANT(MAXPAGESIZE)){
       KEEP(*(.requests_start_marker))
@@ -43,7 +42,7 @@ SECTIONS{
 
     /* NOTE: .bss needs to be the last thing mapped to :data, otherwise lots of */
     /* above this. */
-    .bss : {
+    .bss : ALIGN(CONSTANT(MAXPAGESIZE)){
         *(.bss .bss.*)
         *(COMMON)
     } :data

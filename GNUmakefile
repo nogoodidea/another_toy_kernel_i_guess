@@ -3,9 +3,11 @@ KERN_DIR := $(abspath kernel/)
 LIMINE_DIR := $(abspath submodules/limine/)
 OUT_DIR := $(abspath bin/)
 
+QEMU_OPTIONS := -drive file=$(OUT_DIR)/image.hdd,format=raw,index=0,media=disk
 
+.PHONY: hdd_image out/image.hdd
 
-hhd_image: kernal ramdisk
+out/image.hdd: kernal ramdisk
 	rm -f $(OUT_DIR)/image.hdd
 	mkdir -p $(OUT_DIR)
 	dd if=/dev/zero bs=1M count=0 seek=64 of=$(OUT_DIR)/image.hdd
@@ -19,10 +21,13 @@ hhd_image: kernal ramdisk
 	mcopy -i $(OUT_DIR)/image.hdd@@1M $(LIMINE_DIR)/BOOTIA32.EFI ::/EFI/BOOT
 
 qemu:
-	qemu-system-x86_64 $(OUT_DIR)/image.hdd -serial stdio &
+	qemu-system-x86_64 -serial stdio $(QEMU_OPTIONS)
+
+qemu-debug:
+	qemu-system-x86_64 -d int -no-reboot -no-shutdown -monitor stdio $(QEMU_OPTIONS)
 
 qemu-gdb:
-	qemu-system-x86_64 $(OUT_DIR)/image.hdd -serial stdio -chardev socket,path=/tmp/gdb-socket,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 -S &
+	qemu-system-x86_64 -serial stdio -chardev socket,path=/tmp/gdb-socket,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 -S $(QEMU_OPTIONS)&
 	gdb --eval-command "target remote /tmp/gdb-socket"
 
 
@@ -39,4 +44,5 @@ limine:
 
 
 clean:
+	$(MAKE) -C $(KERN_DIR) clean
 	rm -rf $(OUT_DIR)

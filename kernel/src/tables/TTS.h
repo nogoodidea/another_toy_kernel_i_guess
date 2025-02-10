@@ -1,6 +1,8 @@
 #ifndef TABLES_TTS_H
 #define TABLES_TTS_H
 
+#include <stdbool.h>
+
 #include "common/types.h"
 
 void tts_set_RSP0 (u64 ptr);
@@ -30,6 +32,8 @@ u64 tts_get_IST5 ();
 
 void tts_set_IST6 (u64 ptr);
 u64 tts_get_IST6 ();
+
+bool tts_init();
 
 struct __attribute__((packed)) tts_s{
   u16 reserved0;
