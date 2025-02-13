@@ -44,7 +44,7 @@ void kprint_flush(void){
 }
 
 
-void kprints_s(u16 port,const char * str){
+void kprints_s(usize port,const char * str){
   usize i = 0;
   while(str[i] != '\0'){
     serial_write(port,str[i]);
@@ -52,7 +52,7 @@ void kprints_s(u16 port,const char * str){
   }
 }
 
-void kprintu_s(u16 port,u64 value,u8 base){
+void kprintu_s(usize port,u64 value,u8 base){
   int int_buf[BUF_SIZE] = {0};
   usize i = BUF_SIZE-2;
   for (;value && value;--i,value /= base){

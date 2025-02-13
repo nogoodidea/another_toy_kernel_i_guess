@@ -115,7 +115,7 @@ void io_output_string_len(struct io_buffer_s *b,char *str,usize len){
 
 //printf but like shitty and we don't need half of the stuff here
 // assumes va_list is setup
-void io_output_format(struct io_buffer_s *b,char *format, va_list args){
+void io_output_format(struct io_buffer_s *b,const char *format, va_list args){
   usize i = 0;
   
   // so you craw format untill you get a %
@@ -149,5 +149,4 @@ void io_output_format(struct io_buffer_s *b,char *format, va_list args){
     }
     i++;
   }
-  
 }

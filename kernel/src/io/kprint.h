@@ -21,10 +21,8 @@ void kprint_c(char c);
 
 void kprint_flush(void);
 
-void kprints_s(u16 port,const char * str);
+void kprints_s(usize port,const char * str);
 
-void kprintu_s(u16 port,u64 value,u8 base);
-
-void io_output_f(struct io_buffer_s *b,char *format,...);
+void kprintu_s(usize port,u64 value,u8 base);
 
 #endif //KPRINT_H

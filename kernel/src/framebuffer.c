@@ -1,10 +1,7 @@
 
-#include <limine.h>
-
-
 #include "common/types.h"
 
-void fb_fill(struct limine_framebuffer *fb,u8 r, u8 b, u8 g){
+/*void fb_fill(*fb,u8 r, u8 b, u8 g){
   u8 *buf = fb->address;
   for(usize y = 0;y<fb->height;y++){
     for(usize x = 0;x<fb->width;x++){
@@ -37,4 +34,4 @@ int fb_rec(struct limine_framebuffer *fb, usize start_x, usize start_y, usize of
     buf += fb->pitch;
   }
   return 1;
-}
+}*/

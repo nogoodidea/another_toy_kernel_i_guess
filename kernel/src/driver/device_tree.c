@@ -64,11 +64,11 @@ bool device_tree_check_version(struct fdt_header *devicetree_header){
 // assumes that the tree is valid
 // see the two checking functions
 // but really this just gives device names so i can see what i'm working with on my vm
-void device_tree_craw_tree(struct fdt_header *devicetree_header){
+/*void device_tree_craw_tree(struct fdt_header *devicetree_header){
   
   bool brk = false; // break varable
-  u32 *bound_ptr = (u32 *) (((char *) devicetree_header) +BG(devicetree_header->totalsize));
-  u32 *ptr = (u32 *) (((char *) devicetree_header) +BG(devicetree_header->off_dt_struct));
+  u32 *bound_ptr = (u32 *) (((char *) devicetree_header) + BG(devicetree_header->totalsize));
+  u32 *ptr = (u32 *) (((char *) devicetree_header) + BG(devicetree_header->off_dt_struct));
 
   while(!brk && ptr <= bound_ptr){
     switch(*ptr){
@@ -103,4 +103,4 @@ void device_tree_craw_tree(struct fdt_header *devicetree_header){
     ptr+=sizeof(u32);
   }
   kprint_flush();
-}
+}*/

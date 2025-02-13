@@ -24,6 +24,6 @@ void io_output_string(io_buffer b,char *str);
 
 void io_output_string_len(io_buffer b,char *str,usize len);
 
-void io_output_format(struct io_buffer_s *b,char *format,va_list args);
+void io_output_format(struct io_buffer_s *b,const char *format,va_list args);
 
 #endif //IO_BUFFER_H

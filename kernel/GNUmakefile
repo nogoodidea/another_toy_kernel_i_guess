@@ -7,16 +7,16 @@ MAKEFLAGS += -rR
 
 # This is the name that our final executable will have.
 # Change as needed.
-override OUTPUT := yamk
+override OUTPUT := yamk.elf
 
 # Convenience macro to reliably declare user overridable variables.
 override USER_VARIABLE = $(if $(filter $(origin $(1)),default undefined),$(eval override $(1) := $(2)))
 
 # User controllable C compiler command.
-$(call USER_VARIABLE,KCC,x86_64-elf-gcc)
+$(call USER_VARIABLE,KCC,riscv64-none-elf-gcc)
 
 # User controllable linker command.
-$(call USER_VARIABLE,KLD,x86_64-elf-ld)
+$(call USER_VARIABLE,KLD,riscv64-none-elf-ld)
 
 # User controllable C flags.
 $(call USER_VARIABLE,KCFLAGS,-g -O2 -pipe)
@@ -35,26 +35,18 @@ $(call USER_VARIABLE,KLDFLAGS,)
 # root of the git repo
 $(call USER_VARIABLE,GIT_ROOT, $(shell git rev-parse --show-toplevel))
 
+LINKER_SCRIPT=src/kernal_linker.ld
+
 override KCFLAGS += \
     -Wall \
     -Wextra \
-    -std=gnu11 \
     -ffreestanding \
-    -fno-stack-protector \
-    -fno-stack-check \
+		-nostartfiles \
+		-nostdlib \
+		-nodefaultlibs \
     -fno-lto \
     -fno-PIC \
-    -m64 \
-    -march=x86-64 \
-    -mno-80387 \
-    -mno-mmx \
-    -mno-sse \
-    -mno-sse2 \
-    -mno-red-zone \
-    -mcmodel=kernel \
-		-I $(GIT_ROOT)/submodules/limine/ \
-		-I src/common/
-
+    -mcmodel=medany \
 		
 # Internal C preprocessor flags that should not be changed by the user.
 override KCPPFLAGS := \
@@ -63,24 +55,16 @@ override KCPPFLAGS := \
     -MMD \
     -MP
 
-# Internal nasm flags that should not be changed by the user.
-override KNASMFLAGS += \
-    -Wall \
-    -f elf64
-
 # Internal linker flags that should not be changed by the user.
 override KLDFLAGS += \
-    -m elf_x86_64 \
     -nostdlib \
     -static \
-    -z max-page-size=0x1000 \
-    -T linker.ld
+		-T $(LINKER_SCRIPT)
 
 # Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
 # object and header dependency file names.
 override CFILES := $(shell cd src && find -L * -type f -name '*.c' | LC_ALL=C sort)
 override ASFILES := $(shell cd src && find -L * -type f -name '*.S' | LC_ALL=C sort)
-override NASMFILES := $(shell cd src && find -L * -type f -name '*.asm' | LC_ALL=C sort)
 override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
@@ -89,7 +73,7 @@ override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 all: bin/$(OUTPUT)
 
 # Link rules for the final kernel executable.
-bin/$(OUTPUT): GNUmakefile linker.ld $(OBJ)
+bin/$(OUTPUT): GNUmakefile $(LINKER_SCRIPT) $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(KLD) $(OBJ) $(KLDFLAGS) -o $@
 
