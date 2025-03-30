@@ -1,7 +1,9 @@
 #ifndef COMMON_MEM_H
 #define COMMON_MEM_H
 
+
 #include <stdint.h>
+#include "types.h"
 #include <stddef.h>
 // all the memory functions gcc wants
 
@@ -11,5 +13,8 @@ void *memove(void *dest, const void *src, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
 
 volatile void *memsetv(volatile void *s, int c, size_t n);
+
+u32 __bswapsi2(u32 value);
+
 
 #endif //COMMON_MEM_H

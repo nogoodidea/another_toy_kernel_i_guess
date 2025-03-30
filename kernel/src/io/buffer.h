@@ -4,6 +4,7 @@
 #include "../common/types.h"
 
 #include <stdarg.h>
+#include <stdbool.h>
 
 #define IO_BUFFER_LEN 512
 
@@ -14,7 +15,9 @@ io_buffer __io_buffer_get_static_buff();
 
 void io_init_buffer(io_buffer b,void *data,bool (*flush)(char buffer[IO_BUFFER_LEN],usize index, void *data));
 
-void io_output_uint(io_buffer b,u64 value,u8 base);
+void io_output_u64(io_buffer b,u64 value,u8 base);
+void io_output_u32(io_buffer b,u32 value,u8 base);
+
 
 void io_output_char(io_buffer b,char c);
 

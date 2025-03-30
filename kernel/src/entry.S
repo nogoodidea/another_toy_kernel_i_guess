@@ -1,12 +1,13 @@
+
 .section .init
 
 .option norvc
 
-.type start @function
+.type _start @function
 .global _start
 
 // start of kern
-start:
+_start:
   .cfi_startproc
 
 .option push
@@ -18,8 +19,8 @@ start:
   csrw satp, zero
   
   // stack
-  la sp, _INT_STACK_TOP_
-  
+  la sp, _INT_INTERRUPT_STACK_
+
   // sets args up
   la t5, _BSS_START_
   la t6, _BSS_END_

@@ -32,20 +32,21 @@ bool serial_int(usize addr){
 //
 bool serial_received(usize addr){
   // TODO
-  return false;
+  return (*((volatile u8 *)addr + 5) & (1<<0)) != 0;
 }
 
 char serial_read(usize addr){
   // todo check if data is ready
+  while(!serial_received(addr)){}
   return *(volatile u8 *)addr; // input from line status and check if data is ready
 }
 
 bool serial_can_transmit(usize addr){
-  return false; //TODO
+  return (*((volatile u8 *)addr + 5) & (1<<5)) != 0;
 }
 
 void serial_write(usize addr ,char c){
-
+  while(!serial_can_transmit(addr)){}
   *(volatile u8 *)addr = c; 
 }
 
@@ -63,4 +64,20 @@ void io_init_serial(io_buffer b,usize addr){
   if(!serial_int(addr)){
     PANIC("UNABLE TO INT BUFFER"); // like ... this will not display.
   }
+}
+
+/// echo char
+void io_serial_echo_input(usize addr){
+ char c ='\0';
+ while(c != '\r'){
+   c = serial_read(addr);
+   serial_write(addr,c);
+ }
+ serial_write(addr,'\n');
+}
+
+/// registers callbacks over serial will just echo
+void io_serial_register_echo_interrupt(usize addr, u16 interrupt_number){
+  // now setup the interrupt :3
+  *(((volatile u8 *)addr) + 1) = 1 << 0;
 }

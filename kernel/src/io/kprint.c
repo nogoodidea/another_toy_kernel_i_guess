@@ -31,7 +31,7 @@ void kprint_s(char *str){
 }
 
 void kprint_i(u64 value, u8 base){
-  io_output_uint(output_buffer,value,base);
+  io_output_u64(output_buffer,value,base);
 }
 
 // prints char

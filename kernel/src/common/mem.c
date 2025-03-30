@@ -79,3 +79,18 @@ int memcmp(const void *s1, const void *s2, size_t n){
 
     return 0;  
 }
+
+u32 __bswapsi2(u32 value){
+  u8 *v = (u8 *) &value; 
+  u8 swap = 0;
+  
+  swap = *v;
+  *v = *(v+3);
+  *(v+3) = swap;
+
+  swap = *(v+1);
+  *(v+1) = *(v+2);
+  *(v+2) = swap;
+
+  return value;
+}

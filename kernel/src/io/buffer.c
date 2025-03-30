@@ -55,21 +55,49 @@ void io_output_char(struct io_buffer_s* b,char c){
 // strongs
 void io_output_string(struct io_buffer_s *b,char *str){
   while(*str != '\0'){
-    if(b->index < IO_BUFFER_LEN){
+    if(b->index >= IO_BUFFER_LEN -1){
       io_flush(b);
     }
     b->buffer[b->index++] = *(str++);
   }
 }
 
-void io_output_uint(struct io_buffer_s *b,u64 value,u8 base){
+void io_output_u32(struct io_buffer_s *b,u32 value,u8 base){
+
+  if(value == 0){
+    io_output_char(b,'0');
+    return ;
+  }
+
   int int_buf[26] = {0};
   usize i = 24;
   for (;value && value;--i,value /= base){
     int_buf[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[value % base]; 
   }
   for(--i;i<26;i++){
-    if(b->index < IO_BUFFER_LEN){
+    if(b->index >= IO_BUFFER_LEN -1){
+      io_flush(b);
+    }
+    b->buffer[b->index++] = int_buf[i];
+  }
+}
+
+// just copyed from io_output_u32
+void io_output_u64(struct io_buffer_s *b,u64 value,u8 base){
+
+  if(value == 0){
+    io_output_char(b,'0');
+    return ;
+  }
+
+
+  int int_buf[26] = {0};
+  usize i = 24;
+  for (;value && value;--i,value /= base){
+    int_buf[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[value % base]; 
+  }
+  for(--i;i<26;i++){
+    if(b->index > IO_BUFFER_LEN -1){
       io_flush(b);
     }
     b->buffer[b->index++] = int_buf[i];
@@ -79,6 +107,11 @@ void io_output_uint(struct io_buffer_s *b,u64 value,u8 base){
 void io_output_int(struct io_buffer_s *b,i64 value,u8 base){
   int int_buf[26] = {0};
   usize i = 24;
+  
+  if(value == 0){
+    io_output_char(b,'0');
+    return ;
+  }
 
   bool sign = 0 > value; // drop the sign 
   if(sign) value *= -1; // don't you
@@ -87,7 +120,7 @@ void io_output_int(struct io_buffer_s *b,i64 value,u8 base){
     int_buf[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[value % base]; 
   }
 
-  if(b->index + 27 < IO_BUFFER_LEN){
+  if(b->index + 27 >= IO_BUFFER_LEN -1){
     io_flush(b);
   }
   
@@ -112,31 +145,77 @@ void io_output_string_len(struct io_buffer_s *b,char *str,usize len){
     }
   }
 }
+//printf formatter helpers
+
+usize __io_output_printf_precision(const char *fmt,usize *i){
+  usize count = 0;
+  while(fmt[*i] >= 48 && fmt[*i] <= 57){
+    count *=10;
+    count += fmt[*i] - 48;
+   (*i)++;
+  }
+
+  return count;
+}
 
 //printf but like shitty and we don't need half of the stuff here
 // assumes va_list is setup
 void io_output_format(struct io_buffer_s *b,const char *format, va_list args){
   usize i = 0;
+  usize precision = 0;
+
   
   // so you craw format untill you get a %
   // probaly with a flush check too :)
   while(format[i] != '\0'){
     if(format[i] == '%'){
-      i++; // we saw one now show the other hand.
+      i++;
+
+      precision = __io_output_printf_precision(format,&i);
+
+      // we saw one now show the other hand.
       switch(format[i]){
-        case's':
-          io_output_string(b,va_arg(args,char *));
+        case's': // string
+          if(precision == 0){
+            io_output_string(b,va_arg(args,char *));
+          }else{
+            io_output_string_len(b,va_arg(args,char *),precision);
+          }
           break;
-        case'u':
-          io_output_uint(b,va_arg(args,u64),10);
+        case'S':
+          io_output_string_len(b,va_arg(args,char *),va_arg(args,usize));
           break;
-        case'x':
+        case 'l':
+          i++;
+          switch(format[i]){
+            case'u': // insigned int
+              io_output_u64(b,va_arg(args,u64),10);
+              break;
+            case'x': // hex
+              io_output_string_len(b,"0x",2); 
+              io_output_u64(b,va_arg(args,u64),16);
+              break;
+            default:
+              PANIC("UNKNOWN FORMATTER");
+          }
+          break;
+        case'u': // insigned int
+          io_output_u32(b,va_arg(args,u32),10);
+          break;
+        case'x': // hex
+          io_output_string_len(b,"0x",2); 
+          io_output_u32(b,va_arg(args,u32),16);
+          break;
+        case'p':
           io_output_string_len(b,"0x",2); // smiles,  so i get to use this after all how fun
-          io_output_uint(b,va_arg(args,u64),16);
+          io_output_u64(b,(usize) va_arg(args,void *),16);
           break;
         case'%':
           io_output_char(b,'%');
           break; // a
+        case'c':
+            io_output_char(b,va_arg(args,int));
+            break;
         default:
           PANIC("UNKNOWN FORMATTER");
           break; // unreachable  
@@ -150,3 +229,4 @@ void io_output_format(struct io_buffer_s *b,const char *format, va_list args){
     i++;
   }
 }
+
