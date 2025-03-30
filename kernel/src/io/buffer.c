@@ -221,7 +221,7 @@ void io_output_format(struct io_buffer_s *b,const char *format, va_list args){
           break; // unreachable  
       }
     }else{ // not aaaaaa formater
-      if(b->index < IO_BUFFER_LEN){
+      if(b->index >= IO_BUFFER_LEN -1){
         io_flush(b);
       }
       b->buffer[b->index++] = format[i];   
