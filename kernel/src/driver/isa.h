@@ -23,3 +23,6 @@
 bool isa_check(u8 extension);
 bool isa_check_char(char extension);
 void isa_print();
+
+usize isa_get_instruction_len(void * ins);
+
