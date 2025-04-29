@@ -21,4 +21,7 @@ bool device_tree_check_version(struct fdt_header *devicetree_header);
 
 void device_tree_craw_tree(struct fdt_header *devicetree_header);
 
+// memory
+void device_tree_memory(struct fdt_header *devicetree_header);
+
 #endif //DRIVER_DEVICE_TREE_H

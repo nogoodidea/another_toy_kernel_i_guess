@@ -32,8 +32,13 @@ _interrupt_handler:
       
       // so everythings good right?
       // ok now get the interrupt number for the handler
-      csrrw a0,mcause,zero
+      csrrs a0,mcause,zero
+      csrrs a1,mepc,zero // oh and like the errored addr ... task switching might be hellish but one less thing now also debugging stuff
+      //
+      
       jal   interrupt_handler 
+
+      csrrw zero,sepc,a0 // returned value to ptr
 
       addi  sp, sp, 144
       ld    a0, 0(sp)

@@ -34,12 +34,8 @@ void kmain(usize hart_id,struct fdt_header *fdt_ptr) {
   kprintf("\n\r");
 
   isa_print();
-
-  if(device_tree_check_magic(fdt_ptr) && device_tree_check_version(fdt_ptr)){
-    device_tree_craw_tree(fdt_ptr);
-  }else{
-    PANIC("INVALID DEVICE TREE");
-  }
+  
+  kprint_flush();
 
   // trust
   interrupt_enable_all();
@@ -48,7 +44,13 @@ void kmain(usize hart_id,struct fdt_header *fdt_ptr) {
 
   io_serial_register_echo_interrupt(0x10000000,0); 
 
-  io_serial_echo_input(0x10000000);
+  if(device_tree_check_magic(fdt_ptr) && device_tree_check_version(fdt_ptr)){
+    device_tree_craw_tree(fdt_ptr);
+    device_tree_memory(fdt_ptr);
+  }else{
+    PANIC("INVALID DEVICE TREE");
+  }
+  kprint_flush();
   
   char * ptr = NULL;
   *ptr = 2;

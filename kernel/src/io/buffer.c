@@ -46,7 +46,7 @@ bool io_flush(struct io_buffer_s* b){
 
 // just for chars
 void io_output_char(struct io_buffer_s* b,char c){
-  if(b->index < IO_BUFFER_LEN || c == '\n'){
+  if(b->index >= IO_BUFFER_LEN -1 || c == '\n'){
     io_flush(b);
   }
   b->buffer[b->index++] = c;
@@ -55,7 +55,7 @@ void io_output_char(struct io_buffer_s* b,char c){
 // strongs
 void io_output_string(struct io_buffer_s *b,char *str){
   while(*str != '\0'){
-    if(b->index >= IO_BUFFER_LEN -1){
+    if(b->index == IO_BUFFER_LEN -1){
       io_flush(b);
     }
     b->buffer[b->index++] = *(str++);
@@ -74,10 +74,13 @@ void io_output_u32(struct io_buffer_s *b,u32 value,u8 base){
   for (;value && value;--i,value /= base){
     int_buf[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[value % base]; 
   }
+
+
+  if(b->index + 26 >= IO_BUFFER_LEN -1){
+    io_flush(b);
+  }
+
   for(--i;i<26;i++){
-    if(b->index >= IO_BUFFER_LEN -1){
-      io_flush(b);
-    }
     b->buffer[b->index++] = int_buf[i];
   }
 }
@@ -96,10 +99,12 @@ void io_output_u64(struct io_buffer_s *b,u64 value,u8 base){
   for (;value && value;--i,value /= base){
     int_buf[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[value % base]; 
   }
+
+  if(b->index + 26 >= IO_BUFFER_LEN -1){
+    io_flush(b);
+  }
+
   for(--i;i<26;i++){
-    if(b->index > IO_BUFFER_LEN -1){
-      io_flush(b);
-    }
     b->buffer[b->index++] = int_buf[i];
   }
 }
@@ -120,7 +125,7 @@ void io_output_int(struct io_buffer_s *b,i64 value,u8 base){
     int_buf[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[value % base]; 
   }
 
-  if(b->index + 27 >= IO_BUFFER_LEN -1){
+  if(b->index + 26 >= IO_BUFFER_LEN -1){
     io_flush(b);
   }
   
@@ -212,7 +217,7 @@ void io_output_format(struct io_buffer_s *b,const char *format, va_list args){
           break;
         case'%':
           io_output_char(b,'%');
-          break; // a
+          break; // a char
         case'c':
             io_output_char(b,va_arg(args,int));
             break;
@@ -220,7 +225,7 @@ void io_output_format(struct io_buffer_s *b,const char *format, va_list args){
           PANIC("UNKNOWN FORMATTER");
           break; // unreachable  
       }
-    }else{ // not aaaaaa formater
+    }else{ // not a formater
       if(b->index >= IO_BUFFER_LEN -1){
         io_flush(b);
       }

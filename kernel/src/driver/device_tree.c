@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stddef.h>
+
 
 #include "device_tree.h"
 
@@ -22,6 +24,11 @@
 struct fdt_prop_s {
   u32 len;
   u32 nameoff;
+};
+
+struct fdt_mem_s {
+  u64 address;
+  u64 size;
 };
 
 
@@ -48,40 +55,60 @@ void device_tree_craw_tree(struct fdt_header *devicetree_header){
 
   u32 *ptr = (u32 *) (((char *) devicetree_header) + endian32(devicetree_header->off_dt_struct));
 
+  char *unit_name = NULL;
+  struct fdt_prop_s *prop = NULL;
+
   while(!brk && ptr <= bound_ptr){
     switch(*ptr){
       case FDT_BEGIN_NODE:
 
-        char *unit_name = (char *) (ptr + 1);
-        
+        unit_name = (char *) (ptr + 1);
+         
         kprintf("{ name: %s\r\n",unit_name);
 
-        while(*unit_name != '\0') unit_name +=1;
+        while(*unit_name != '\0') unit_name += 1;
 
-        usize offset = ((usize) unit_name) - ((usize) ptr);
+        usize offset = ((usize) unit_name) - ((usize) (ptr + 1));
 
-        ptr += (offset / sizeof(u32)) + ((offset % sizeof(u32)) > 0);
-
+        ptr += (offset / sizeof(u32)) + (((offset % sizeof(u32)) > 0) ? 1 : 0) + 1;
         break;
       case FDT_END_NODE:
         kprintf("}\n\r");
+        ptr++;
         break;
       case FDT_PROP:
         
-        struct fdt_prop_s *prop = (struct fdt_prop_s *) ++ptr;
+        prop = (struct fdt_prop_s *) ptr + 1;
         
         kprintf("prop: %s:\t%S \r\n",stringoff + endian32(prop->nameoff),((char*) (ptr + 4)) + 1,endian32(prop->len));
 
-        ptr += endian32(prop->len)/sizeof(u32)+((endian32(prop->len) % sizeof(u32)) > 1);
+        ptr += endian32(prop->len)/sizeof(u32) + ( ( (endian32(prop->len) % sizeof(u32)) > 1 ) ? 1 : 0 ) + 2; // number of chars div by 32 + is it not 32 ... then shift it over + 2 bc FDT_PROC_struct
         break;
       case FDT_NOP:
+        ptr++;
         break;
       case FDT_END:
         brk = true;
         break;
       default:
+        kprintf("ERORR: unknown device tree token %x at %p\r\n",*ptr,ptr);
+        ptr++;
+        break;
     }
-    ptr++;
   }
-  kprint_flush();
+}
+
+
+// memory resurved block
+void device_tree_memory(struct fdt_header *devicetree_header){
+  
+
+  const u32 *bound_ptr = (u32 *) (((char *) devicetree_header) + endian32(devicetree_header->totalsize));
+  struct fdt_mem_s *mem_s =(struct fdt_mem_s *) (((char *) devicetree_header) + endian32(devicetree_header->off_mem_rsvmap));
+  
+  while( (usize) mem_s <= (usize) bound_ptr){// bc diffrent ptr
+      // format is like ... fdt_header
+      kprintf("mem_block: %x, size: %x\n\r");
+      mem_s++;
+  }
 }

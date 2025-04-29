@@ -3,8 +3,8 @@ OUTPUT_FORMAT("elf64-littleriscv")
 
 
 MEMORY {
-  kernel_init (rwx) : ORIGIN = 0x80000000, LENGTH = 128
-  kernel_main (rwx) : ORIGIN = 0x81000000, LENGTH = 64k
+  kernel_init (rwx) : ORIGIN = 0x80000000, LENGTH = 512
+  kernel_main (rwx) : ORIGIN = 0x81000010, LENGTH = 64k
 }
 
 SECTIONS {
