@@ -16,5 +16,7 @@ volatile void *memsetv(volatile void *s, int c, size_t n);
 
 u32 __bswapsi2(u32 value);
 
+u64 __bswapsdi2(u64 value);
+
 
 #endif //COMMON_MEM_H

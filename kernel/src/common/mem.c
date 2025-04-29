@@ -94,3 +94,26 @@ u32 __bswapsi2(u32 value){
 
   return value;
 }
+
+u64 __bswapdi2(u64 value){
+  u8 *v = (u8 *) &value;
+  u8 swap = 0;
+
+  swap = v[0];
+  v[0] = v[7];
+  v[7] = swap;
+
+  swap = v[1];
+  v[1] = v[6];
+  v[6] = swap;
+
+  swap = v[2];
+  v[2] = v[5];
+  v[5] = swap;
+
+  swap = v[3];
+  v[3] = v[4];
+  v[4] = swap;
+
+  return value;
+}
