@@ -1,6 +1,6 @@
 # Another toy kernel i guess 
 
-A microkernel for made for fun.
+A microkernel made for fun.
 
 ## Dependencys
 * QEMU riscv64
@@ -10,6 +10,7 @@ A microkernel for made for fun.
 TLDR follow this guide: [osdev.wiki GCC Cross-Compiler](https://wiki.osdev.org/GCC_Cross-Compiler) 
 * the target tuple is `riscv64-none-elf`.
 * alternatively you can use a prebuilt toolchain but i havent used one for building so like ... Here Be Dragons and all that.
+
 Then the install qemu-system-riscv64 from your distros package manager.
 
 `make` and then `make qemu` to test it. 
